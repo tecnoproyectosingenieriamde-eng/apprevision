@@ -1,5 +1,5 @@
 // REEMPLAZA ESTO CON LA URL GENERADA EN APPS SCRIPT
-const API_URL = "[https://script.google.com/macros/s/AKfycbyLaFBmp0Gx5c0l55C7TOAfNVu9xKBsxNYcpd5C3diNqMTevg6eqD3O2Js33feFLibI/exec](https://script.google.com/macros/s/AKfycbyLaFBmp0Gx5c0l55C7TOAfNVu9xKBsxNYcpd5C3diNqMTevg6eqD3O2Js33feFLibI/exec)"; 
+const API_URL = "[https://script.google.com/macros/s/AKfycbyiRcbpm9xBufKh7ZZJGxpCB00-XZrfaJV-g83zmZMhDotmuxdhpJJitXVN2ydU7Z8/exec](https://script.google.com/macros/s/AKfycbyiRcbpm9xBufKh7ZZJGxpCB00-XZrfaJV-g83zmZMhDotmuxdhpJJitXVN2ydU7Z8/exec)"; 
 
 let db;
 let currentUser = localStorage.getItem("user") || "";
