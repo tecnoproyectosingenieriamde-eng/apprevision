@@ -7,7 +7,7 @@
   "theme_color": "#2563eb",
   "icons": [
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Check_green_icon.svg/192px-Check_green_icon.svg.png",
+      "src": "./icon.png",
       "sizes": "192x192",
       "type": "image/png"
     }
