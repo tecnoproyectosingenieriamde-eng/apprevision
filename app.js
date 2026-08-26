@@ -44,7 +44,8 @@ async function login() {
     document.querySelector("#login-screen button").innerText = "Verificando...";
     
     try {
-        const res = await fetch(`${API_URL}?action=login&usuario=${user}&clave=${pass}`, { method: 'POST' });
+        // Petición por GET para evitar bloqueos CORS en dispositivos móviles
+        const res = await fetch(`${API_URL}?action=login&usuario=${user}&clave=${pass}`);
         const data = await res.json();
         
         if (data.success) {
@@ -58,11 +59,10 @@ async function login() {
             document.querySelector("#login-screen button").innerText = "Ingresar";
         }
     } catch(err) {
-        alert("Error de conexión con el servidor.");
+        alert("Error de conexión con el servidor. Verifica tu URL.");
         document.querySelector("#login-screen button").innerText = "Ingresar";
     }
 }
-
 // Si ya tiene sesión
 if(currentUser) {
     document.getElementById("login-screen").classList.add("hidden");
