@@ -45,9 +45,18 @@ async function login() {
     
     try {
         // Petición por GET para evitar bloqueos CORS en dispositivos móviles
-        const res = await fetch(`${API_URL}?action=login&usuario=${user}&clave=${pass}`);
-        const data = await res.json();
+        try {
+        // Construimos la URL
+        const urlLogin = `${API_URL}?action=login&usuario=${user}&clave=${pass}`;
         
+        // Petición con orden estricta de seguir redirecciones
+        const res = await fetch(urlLogin, {
+            method: 'GET',
+            redirect: 'follow' 
+        });
+        
+        const data = await res.json();
+               
         if (data.success) {
             currentUser = user;
             localStorage.setItem("user", user);
