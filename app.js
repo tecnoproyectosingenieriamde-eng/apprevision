@@ -86,6 +86,7 @@ function captureGPS() {
 }
 
 // 5. Guardar Registro Localmente
+// 5. Guardar Registro Localmente con Compresión Automática
 async function saveRecord() {
     const idPoste = document.getElementById("id_poste").value;
     const file = document.getElementById("cameraInput").files[0];
@@ -96,25 +97,56 @@ async function saveRecord() {
     
     const reader = new FileReader();
     reader.onload = function(event) {
-        const record = {
-            id_poste: idPoste.toUpperCase(),
-            usuario: currentUser,
-            latitud: currentGPS.lat,
-            longitud: currentGPS.lng,
-            timestamp: new Date().toISOString(),
-            fotoBase64: event.target.result // Convierte la foto a cadena de texto
+        const img = new Image();
+        img.onload = function() {
+            // Crear un lienzo temporal para reducir el tamaño de la foto
+            const canvas = document.createElement("canvas");
+            const MAX_WIDTH = 800;
+            const MAX_HEIGHT = 800;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Comprimir la imagen a JPG con calidad del 70% (Evita el error de memoria RAM)
+            const fotoComprimidaBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+            const record = {
+                id_poste: idPoste.toUpperCase(),
+                usuario: currentUser,
+                latitud: currentGPS.lat,
+                longitud: currentGPS.lng,
+                timestamp: new Date().toISOString(),
+                fotoBase64: fotoComprimidaBase64
+            };
+            
+            const tx = db.transaction("registros", "readwrite");
+            tx.objectStore("registros").add(record);
+            tx.oncomplete = () => {
+                alert("Inspección guardada exitosamente en el equipo.");
+                document.getElementById("id_poste").value = "";
+                document.getElementById("cameraInput").value = "";
+                currentGPS = null;
+                document.getElementById("gps-data").innerText = "";
+                checkQueue();
+            };
         };
-        
-        const tx = db.transaction("registros", "readwrite");
-        tx.objectStore("registros").add(record);
-        tx.oncomplete = () => {
-            alert("Inspección guardada exitosamente en el equipo.");
-            document.getElementById("id_poste").value = "";
-            document.getElementById("cameraInput").value = "";
-            currentGPS = null;
-            document.getElementById("gps-data").innerText = "";
-            checkQueue();
-        };
+        img.src = event.target.result;
     };
     reader.readAsDataURL(file);
 }
