@@ -85,8 +85,7 @@ function captureGPS() {
     );
 }
 
-// 5. Guardar Registro Localmente
-// 5. Guardar Registro Localmente con Compresión Automática
+// 5. Guardar Registro Localmente sin saturar la memoria del celular
 async function saveRecord() {
     const idPoste = document.getElementById("id_poste").value;
     const file = document.getElementById("cameraInput").files[0];
@@ -95,60 +94,68 @@ async function saveRecord() {
     if (!currentGPS) return alert("Falta capturar la coordenada GPS.");
     if (!file) return alert("La fotografía es obligatoria.");
     
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-            // Crear un lienzo temporal para reducir el tamaño de la foto
-            const canvas = document.createElement("canvas");
-            const MAX_WIDTH = 800;
-            const MAX_HEIGHT = 800;
-            let width = img.width;
-            let height = img.height;
+    // Creamos una referencia directa y ligera al archivo sin saturar la RAM
+    const imageUrl = URL.createObjectURL(file);
+    const img = new Image();
+    
+    img.onload = function() {
+        // Liberamos la referencia temporal de memoria
+        URL.revokeObjectURL(imageUrl);
+        
+        // Crear un lienzo temporal para reducir drásticamente el tamaño
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
 
-            if (width > height) {
-                if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                }
-            } else {
-                if (height > MAX_HEIGHT) {
-                    width *= MAX_HEIGHT / height;
-                    height = MAX_HEIGHT;
-                }
+        if (width > height) {
+            if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
             }
+        } else {
+            if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+            }
+        }
 
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
 
-            // Comprimir la imagen a JPG con calidad del 70% (Evita el error de memoria RAM)
-            const fotoComprimidaBase64 = canvas.toDataURL("image/jpeg", 0.7);
+        // Comprimir la imagen a JPG con calidad del 70% (Peso final menor a 150 KB)
+        const fotoComprimidaBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
-            const record = {
-                id_poste: idPoste.toUpperCase(),
-                usuario: currentUser,
-                latitud: currentGPS.lat,
-                longitud: currentGPS.lng,
-                timestamp: new Date().toISOString(),
-                fotoBase64: fotoComprimidaBase64
-            };
-            
-            const tx = db.transaction("registros", "readwrite");
-            tx.objectStore("registros").add(record);
-            tx.oncomplete = () => {
-                alert("Inspección guardada exitosamente en el equipo.");
-                document.getElementById("id_poste").value = "";
-                document.getElementById("cameraInput").value = "";
-                currentGPS = null;
-                document.getElementById("gps-data").innerText = "";
-                checkQueue();
-            };
+        const record = {
+            id_poste: idPoste.toUpperCase(),
+            usuario: currentUser,
+            latitud: currentGPS.lat,
+            longitud: currentGPS.lng,
+            timestamp: new Date().toISOString(),
+            fotoBase64: fotoComprimidaBase64
         };
-        img.src = event.target.result;
+        
+        const tx = db.transaction("registros", "readwrite");
+        tx.objectStore("registros").add(record);
+        tx.oncomplete = () => {
+            alert("Inspección guardada exitosamente en el equipo.");
+            document.getElementById("id_poste").value = "";
+            document.getElementById("cameraInput").value = "";
+            currentGPS = null;
+            document.getElementById("gps-data").innerText = "";
+            checkQueue();
+        };
     };
-    reader.readAsDataURL(file);
+    
+    img.onerror = function() {
+        URL.revokeObjectURL(imageUrl);
+        alert("Error al procesar la imagen de la cámara. Intenta de nuevo.");
+    };
+    
+    img.src = imageUrl;
 }
 
 // 6. Motor de Sincronización (Offline -> Online)
