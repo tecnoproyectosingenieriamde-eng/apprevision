@@ -44,19 +44,15 @@ async function login() {
     document.querySelector("#login-screen button").innerText = "Verificando...";
     
     try {
-        // Petición por GET para evitar bloqueos CORS en dispositivos móviles
-        try {
-        // Construimos la URL
         const urlLogin = `${API_URL}?action=login&usuario=${user}&clave=${pass}`;
         
-        // Petición con orden estricta de seguir redirecciones
         const res = await fetch(urlLogin, {
             method: 'GET',
             redirect: 'follow' 
         });
         
         const data = await res.json();
-               
+        
         if (data.success) {
             currentUser = user;
             localStorage.setItem("user", user);
@@ -68,16 +64,11 @@ async function login() {
             document.querySelector("#login-screen button").innerText = "Ingresar";
         }
     } catch(err) {
-        alert("Error de conexión con el servidor. Verifica tu URL.");
+        alert("Error de conexión con el servidor.");
+        console.error("Detalle del error:", err);
         document.querySelector("#login-screen button").innerText = "Ingresar";
     }
 }
-// Si ya tiene sesión
-if(currentUser) {
-    document.getElementById("login-screen").classList.add("hidden");
-    document.getElementById("app-screen").classList.remove("hidden");
-}
-
 // 4. Captura GPS Inalterable
 let currentGPS = null;
 function captureGPS() {
