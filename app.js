@@ -217,3 +217,46 @@ window.addEventListener('offline', updateOnlineStatus);
 document.addEventListener('DOMContentLoaded', () => {
     updateOnlineStatus();
 });
+// 7. Lector de Código QR con la Cámara del Celular
+let html5QrCode = null;
+
+function startQrScanner() {
+    const readerDiv = document.getElementById("reader");
+    readerDiv.classList.remove("hidden");
+    
+    if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+    }
+    
+    // Inicia la cámara trasera del celular en modo escaneo
+    html5QrCode.start(
+        { facingMode: "environment" }, 
+        {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+        },
+        (decodedText, decodedResult) => {
+            // ¡Código leído con éxito!
+            document.getElementById("id_poste").value = decodedText;
+            alert("¡Código QR leído: " + decodedText + "!");
+            stopQrScanner();
+        },
+        (errorMessage) => {
+            // Errores de escaneo en tiempo real (se ignoran para no saturar)
+        }
+    ).catch((err) => {
+        alert("No se pudo iniciar la cámara. Asegúrate de dar permisos en el navegador.");
+        console.error(err);
+        readerDiv.classList.add("hidden");
+    });
+}
+
+function stopQrScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById("reader").classList.add("hidden");
+        }).catch(err => {
+            console.error("Error al detener la cámara", err);
+        });
+    }
+}
