@@ -136,6 +136,7 @@
         .rounded { border-radius: 0.25rem; }
         .font-bold { font-weight: bold; }
     </style>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
     <!-- Pantalla de Login -->
@@ -155,6 +156,11 @@
         
         <label>ID Código QR</label>
         <input type="text" id="id_poste" placeholder="Ej: TRN-LED-0001" style="text-transform: uppercase;">
+        <!-- Botón y Visor de la Cámara para QR -->
+<button type="button" onclick="startQrScanner()" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg font-bold text-sm shadow">
+    📷 Escanear QR con la Cámara
+</button>
+<div id="reader" class="w-full mt-2 hidden"></div>
         
         <button onclick="captureGPS()" class="btn-outline">📍 Capturar Coordenada GPS</button>
         <p id="gps-data"></p>
