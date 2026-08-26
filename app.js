@@ -170,3 +170,11 @@ async function syncData() {
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
 }
+// Escuchadores activos de red para que el indicador cambie de inmediato
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// Ejecutar la verificación inicial al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    updateOnlineStatus();
+});
