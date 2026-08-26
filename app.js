@@ -23,13 +23,12 @@ function updateOnlineStatus() {
     if (navigator.onLine) {
         ind.className = "text-xs px-2 py-1 bg-green-500 text-white rounded font-bold";
         ind.innerText = "Online";
-        checkQueue();
+        if (db) { checkQueue(); } // <-- Esta es la clave: Solo revisa si la DB ya existe
     } else {
         ind.className = "text-xs px-2 py-1 bg-red-500 text-white rounded font-bold";
         ind.innerText = "Offline";
     }
 }
-updateOnlineStatus();
 
 // 3. Sistema de Login
 async function login() {
@@ -122,6 +121,8 @@ async function saveRecord() {
 
 // 6. Motor de Sincronización (Offline -> Online)
 function checkQueue() {
+    if (!db) return; // <-- Evita que colapse si la DB no está lista
+    
     const tx = db.transaction("registros", "readonly");
     const store = tx.objectStore("registros");
     const request = store.getAll();
@@ -135,7 +136,6 @@ function checkQueue() {
         }
     };
 }
-
 async function syncData() {
     document.getElementById("btn-sync").innerText = "Enviando datos...";
     const tx = db.transaction("registros", "readonly");
